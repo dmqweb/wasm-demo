@@ -9,3 +9,5 @@ crate-type = ["cdylib","rlib"] # 用于指定生成的库类型的字段，定�
 [dependencies]
 yew = "0.17" #使用yew库来构建UI组件
 wasm-bindgen = "0.2" #使用wasm-bindgen来进行wasm的分发
+anyhow = "1.0.32"
+serde = {version = "1.0",features = ["derive"]}

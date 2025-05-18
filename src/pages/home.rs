@@ -1,10 +1,20 @@
-use yew::prelude::*; //yew封装了视图组件，使用App方法将模块进行运行
-pub struct Home {
+use anyhow::Error;
+use yew::format::Json;
+use yew::prelude::*;
+use yew::services::fetch::FetchTask;
+use crate::api;
+
+//yew封装了视图组件，使用App方法将模块进行运行
+pub struct Home {//具有状态、链接和任务列表
     state:State,
     link:ComponentLink<Self>,
+    task:Option<FetchTask>
 }
 pub enum Msg{
     AddToCart(i32),
+    GetProducts,
+    GetProductsSuccess(Vec<Product>),
+    GetProductsError(Error),
 }
 impl Component for Home {
     type Message = Msg;
@@ -25,17 +35,43 @@ impl Component for Home {
                 price: 9.43,
             },
         ];
+        let products = vec![];
         let cart_products = vec![];
+        link.send_message(Msg::GetProducts);
         Self{
             state:State{
                 products,
                 cart_products,
-            },link
+                get_products_error:None,
+                get_products_loaded:false,
+            },link,task:None
         }
     }
     fn update(&mut self, message: Self::Message) -> ShouldRender {//更新时会传入消息，匹配消息的id属性，更新数量或者添加
         println!("更新！！");//这里将会被转换为单页web应用的输出格式（js代码）
         match message {
+            Msg::GetProducts => {
+                self.state.get_products_loaded = false;
+                let handler = self.link.callback(move |response:api::FetchResponse<Vec<Product>>| {
+                    let (_, Json(data)) = response.into_parts();
+                             match data {
+                                 Ok(products) => Msg::GetProductsSuccess(products),
+                                 Err(err) => Msg::GetProductsError(err),
+                             }
+                });
+                self.task = Some(api::get_products(handler));
+                true
+            }
+            Msg::GetProductsSuccess(products)=>{
+                self.state.products = products;
+                self.state.get_products_loaded = true;
+                true
+            }
+            Msg::GetProductsError(error)=>{
+                self.state.get_products_error = Some(error);
+                self.state.get_products_loaded = true;
+                true
+            }
             Msg::AddToCart(product_id) => {
                 let product = self.state.products.iter().find(|p:&&Product| p.id == product_id).unwrap();
                 let cart_product = self.state.cart_products.iter_mut().find(|cp:&&mut CartProduct| cp.product.id==product_id);
@@ -67,11 +103,21 @@ impl Component for Home {
             }
         }).collect();
         let cart_value = self.state.cart_products.iter().fold(0.0,|acc,cp| acc+(cp.quantity as f64 * cp.product.price));
-        html!{
-            <div>
-                <span>{format!("购物车值：{:.2}",cart_value)}</span>
-                <span>{products}</span>
-            </div>
+        if !self.state.get_products_loaded{
+            html!{
+                <div>{"loading ..."}</div>
+            }
+        }else if let Some(_) = self.state.get_products_error {
+            html!{
+                <div><span>{"错误加载！"}</span></div>
+            }
+        }else {
+            html!{
+                <div>
+                    <span>{format!("购物车值：{:.2}",cart_value)}</span>
+                    <span>{products}</span>
+                </div>
+            }
         }
     }
 }
@@ -86,6 +132,8 @@ struct Product{ //定义产品结构体
 struct State{//状态仓库
     products:Vec<Product>,
     cart_products: Vec<CartProduct>,
+    get_products_error:Option<Error>,
+    get_products_loaded:bool,
 }
 struct CartProduct{
     product:Product,

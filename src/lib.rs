@@ -1,4 +1,7 @@
 mod pages;
+mod types;
+mod api;
+
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use crate::pages::Home;
