@@ -3,6 +3,8 @@ use yew::format::Json;
 use yew::prelude::*;
 use yew::services::fetch::FetchTask;
 use crate::api;
+use crate::components::ProductCard;
+use crate::types::{CartProduct, Product};
 
 //yew封装了视图组件，使用App方法将模块进行运行
 pub struct Home {//具有状态、链接和任务列表
@@ -92,14 +94,10 @@ impl Component for Home {
     }
     fn view(&self) -> Html {//html宏相当于jsx语法
         let products:Vec<Html> = self.state.products.iter().map(|product: &Product| {
-            let _product_id = product.id;
+            let product_id = product.id;
+            // 使用组件，传入事件回调（具有Component这个trait的结构体都能被html宏所使用）
             html!{
-                <div>
-                    <img src={&product.image} />
-                    <div>{&product.name}</div>
-                    <div>{"$"}{&product.price}</div>
-                    <button onclick=self.link.callback(move |_| Msg::AddToCart(_product_id))>{"Add To Cart"}</button>
-                </div>
+                <ProductCard product={product} on_add_to_cart=self.link.callback(move|_|Msg::AddToCart(product_id)) />
             }
         }).collect();
         let cart_value = self.state.cart_products.iter().fold(0.0,|acc,cp| acc+(cp.quantity as f64 * cp.product.price));
@@ -112,30 +110,21 @@ impl Component for Home {
                 <div><span>{"错误加载！"}</span></div>
             }
         }else {
-            html!{
+            html! {
                 <div>
-                    <span>{format!("购物车值：{:.2}",cart_value)}</span>
-                    <span>{products}</span>
+                    <div class="navbar">
+                      <div class="navbar_title">{"RustMart"}</div>
+                       <div class="navbar_cart_value">{format!("${:.2}",cart_value)}</div>
+                    </div>
+                    <div class="product_card_list">{products}</div>
                 </div>
             }
         }
     }
-}
-#[derive(Clone)]
-struct Product{ //定义产品结构体
-    id:i32,
-    name:String,
-    description:String,
-    image:String,
-    price:f64,
 }
 struct State{//状态仓库
     products:Vec<Product>,
     cart_products: Vec<CartProduct>,
     get_products_error:Option<Error>,
     get_products_loaded:bool,
-}
-struct CartProduct{
-    product:Product,
-    quantity:i32,
 }
