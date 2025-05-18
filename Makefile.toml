@@ -1,0 +1,9 @@
+# cargo-make工具的配置文件，用于定义和管理项目中的各个任务
+[tasks.build] # 构建成wasm
+command = "wasm-pack" # 打包成wasm，wasm-pack用于生成Rust代码和js之间的绑定代码，主要作用包括：生成绑定代码、处理类型转换、简化开发流程、集成到构建流程
+args = ["build", "--dev", "--target", "web", "--out-name", "wasm", "--out-dir", "./static"]
+watch = { ignore_pattern = "static/*" } # 热更新
+
+[tasks.serve] # 启动服务
+command = "simple-http-server"
+args = ["-i", "./static/", "-p", "3000", "--nocache", "--try-file", "./static/index.html"]

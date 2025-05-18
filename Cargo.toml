@@ -1,0 +1,11 @@
+[package]
+name = "rustmart"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib","rlib"] # 用于指定生成的库类型的字段，定义了编译器应该生成哪种类型的库文件
+# cdylib生成一个动态链接库（主要用于与C语言或其他编程语言进行交互），rlib生成一个Rust静态库（rlib是静态库，用于rust代码内部的依赖管理）
+[dependencies]
+yew = "0.17" #使用yew库来构建UI组件
+wasm-bindgen = "0.2" #使用wasm-bindgen来进行wasm的分发
