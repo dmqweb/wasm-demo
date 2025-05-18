@@ -1,24 +1,19 @@
+mod pages;
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
-struct Hello {} //Hello组件
-impl Component for Hello {
-    //为Hello实现Component组件trait
-    type Message = (); //消息类型
-    type Properties = (); //属性类型
-    fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self {}
-    }
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        true
-    }
-    fn change(&mut self, _: Self::Properties) -> ShouldRender {
-        true
-    }
-    fn view(&self) -> Html {
-        html! { <span>{"Hello World!"}</span> }
-    }
-}
+use crate::pages::Home;
+//使用wasm_bindgen定义wasm构建处开始的函数
 #[wasm_bindgen(start)]
 pub fn run_app() {
-    App::<Hello>::new().mount_to_body();
+    // 使用App的new方法传入模块，挂载到body上
+    App::<Home>::new().mount_to_body();
+}
+struct Product{
+    name:String,
+    description:String,
+    image:String,
+    price:f64,
+}
+struct State{//创建一个新的结构体State，包含products字段来保存来自服务器的产品
+    products:Vec<Product>
 }
