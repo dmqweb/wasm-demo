@@ -1,2 +1,2 @@
 # wasm-demo
-html加载纯wasm模块的项目demo
+纯wasm构建单页应用程序
